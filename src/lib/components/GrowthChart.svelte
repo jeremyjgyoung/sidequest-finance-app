@@ -38,8 +38,8 @@
       <h3>{title}</h3>
       <p class="muted subtitle">
         {parent
-          ? 'A little more, month by month.'
-          : 'Your balance over simulated months'}
+          ? 'A little more, period by period.'
+          : 'Your balance over simulated periods'}
       </p>
     </div>
     <span class="legend"><i></i>Savings</span>
@@ -48,7 +48,7 @@
     class="growth-chart"
     viewBox="0 0 574 200"
     role="img"
-    aria-label={`Savings history for ${goal.title}: ${points.map((p) => `Month ${p.month}, ${formatMoney(p.balance)}`).join('; ')}`}
+    aria-label={`Savings history for ${goal.title}: ${points.map((p) => `Period ${p.month}, ${formatMoney(p.balance)}`).join('; ')}`}
   >
     <defs
       ><linearGradient id="savings-area" x1="0" y1="0" x2="0" y2="1"
@@ -92,14 +92,14 @@
         fill="#FAF9F3"
         stroke="#426B4F"
         stroke-width="2.5"
-        ><title>Month {point.month}: {formatMoney(point.balance)}</title
+        ><title>Period {point.month}: {formatMoney(point.balance)}</title
         ></circle
       >
       {#if points.length < 9 || i === 0 || i === points.length - 1 || i % Math.ceil(points.length / 7) === 0}<text
           x={point.x}
           y="188"
           text-anchor="middle"
-          class="axis-label">{i === 0 ? 'Start' : `M${point.month}`}</text
+          class="axis-label">{i === 0 ? 'Start' : `P${point.month}`}</text
         >{/if}
       {#if points.length < 6 || i === points.length - 1}<text
           x={point.x}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createDemo,
+  DEMO_BALANCES,
   currentGoal,
   exampleDemo,
   parseMoney,
@@ -28,6 +29,92 @@ const total = (s: DemoState) =>
     .filter((e) => e.kind === 'purchase')
     .reduce((n, e) => n + e.amount, 0);
 describe('family savings', () => {
+  it('starts new demos with the supplied wallets and default parent rules', () => {
+    const s = createDemo({
+      teenName: 'Alex',
+      title: 'PS5',
+      icon: 'gamepad',
+      target: 50000,
+      ...DEMO_BALANCES,
+    });
+    expect([
+      s.teenWallet,
+      s.parentWallet,
+      s.fund,
+      s.interestRate,
+      s.interestPeriod,
+    ]).toEqual([50000, 970000, 30000, 10, 'monthly']);
+  });
+  it('allows only the parent to choose a whole rate from 1% to 30%', () => {
+    const s = exampleDemo();
+    expect(() =>
+      transition(s, {
+        type: 'interest-settings',
+        interestRate: 20,
+        interestPeriod: 'weekly',
+      }),
+    ).toThrow();
+    const parent = transition(s, { type: 'role', role: 'parent' });
+    for (const interestRate of [0, 31, 1.5])
+      expect(() =>
+        transition(parent, {
+          type: 'interest-settings',
+          interestRate,
+          interestPeriod: 'monthly',
+        }),
+      ).toThrow();
+    for (const interestRate of [1, 30])
+      expect(
+        transition(parent, {
+          type: 'interest-settings',
+          interestRate,
+          interestPeriod: 'daily',
+        }).interestRate,
+      ).toBe(interestRate);
+  });
+  it.each(['daily', 'weekly', 'monthly'] as const)(
+    'pays the configured rate per %s period and retains historical rules',
+    (interestPeriod) => {
+      const before = exampleDemo();
+      let s = transition(before, { type: 'role', role: 'parent' });
+      s = transition(s, {
+        type: 'interest-settings',
+        interestRate: 20,
+        interestPeriod,
+      });
+      expect([s.fund, s.totalInterest]).toEqual([
+        before.fund,
+        before.totalInterest,
+      ]);
+      s = transition(s, { type: 'advance' });
+      expect(currentGoal(s).balance).toBe(47916);
+      expect(s.ledger.at(-1)).toMatchObject({
+        amount: 7986,
+        interestRate: 20,
+        interestPeriod,
+      });
+      expect(s.ledger.find((e) => e.kind === 'interest')).toMatchObject({
+        amount: 3000,
+        interestRate: 10,
+        interestPeriod: 'monthly',
+      });
+      expect(total(s)).toBe(total(before));
+    },
+  );
+  it('restores old saves with the original 10% monthly rules', () => {
+    const original = exampleDemo();
+    const legacy = JSON.parse(JSON.stringify(original));
+    delete legacy.interestRate;
+    delete legacy.interestPeriod;
+    for (const entry of legacy.ledger) {
+      delete entry.interestRate;
+      delete entry.interestPeriod;
+    }
+    expect(readSaved(JSON.stringify(legacy))).toEqual(original);
+    expect(() =>
+      readSaved(JSON.stringify({ ...original, interestRate: 31 })),
+    ).toThrow();
+  });
   it('reserves money separately and does not mutate command inputs', () => {
     const s = fresh();
     const next = transition(s, { type: 'deposit', amount: 10000 });
@@ -46,7 +133,7 @@ describe('family savings', () => {
       s.totalInterest,
       s.teenWallet,
     ]).toEqual([39930, 20070, 9930, 20000]);
-    for (let n = 0; n < 3; n++) s = transition(s, { type: 'month' });
+    for (let n = 0; n < 3; n++) s = transition(s, { type: 'advance' });
     expect([
       currentGoal(s).balance,
       s.fund,
@@ -78,41 +165,41 @@ describe('family savings', () => {
   it('previews the fifty dollar transfer and reduces future interest after withdrawing', () => {
     let s = transition(exampleDemo(), { type: 'deposit', amount: 5000 });
     expect([s.teenWallet, currentGoal(s).balance]).toEqual([15000, 44930]);
-    s = transition(s, { type: 'month' });
+    s = transition(s, { type: 'advance' });
     expect(s.ledger.at(-1)?.amount).toBe(4493);
     s = transition(s, { type: 'withdrawal', amount: 10000 });
     const before = total(s);
     s = transition(s, { type: 'funding', amount: 5000 });
     expect(total(s)).toBe(before);
-    s = transition(s, { type: 'month' });
+    s = transition(s, { type: 'advance' });
     expect(s.ledger.at(-1)?.amount).toBe(3942);
   });
   it('skips insufficient funding entirely and resumes without back pay', () => {
     let s = transition(fresh(), { type: 'deposit', amount: 30000 });
     s = { ...s, fund: 2999 };
-    s = transition(s, { type: 'month' });
+    s = transition(s, { type: 'advance' });
     expect([currentGoal(s).balance, s.fund, s.ledger.at(-1)?.kind]).toEqual([
       30000,
       2999,
       'skipped',
     ]);
     s = transition(s, { type: 'funding', amount: 1 });
-    s = transition(s, { type: 'month' });
+    s = transition(s, { type: 'advance' });
     expect([currentGoal(s).balance, s.fund, s.totalInterest, s.month]).toEqual([
       33000, 0, 3000, 2,
     ]);
   });
   it('rounds half cents, advances zero-balance months, and handles an exact pool', () => {
-    let s = transition(fresh(), { type: 'month' });
+    let s = transition(fresh(), { type: 'advance' });
     expect([s.month, s.totalInterest]).toEqual([1, 0]);
     s = transition(s, { type: 'deposit', amount: 5 });
-    s = transition(s, { type: 'month' });
+    s = transition(s, { type: 'advance' });
     expect(currentGoal(s).balance).toBe(6);
   });
   it('supports deposit/target completion and locks a reached goal', () => {
     const s = transition(exampleDemo(), { type: 'deposit', amount: 10070 });
     expect(currentGoal(s).status).toBe('reached');
-    expect(() => transition(s, { type: 'month' })).toThrow();
+    expect(() => transition(s, { type: 'advance' })).toThrow();
     expect(() => transition(s, { type: 'withdrawal', amount: 1 })).toThrow();
     const edited = transition(exampleDemo(), {
       type: 'edit-goal',

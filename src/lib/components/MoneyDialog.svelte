@@ -4,7 +4,7 @@
   import { demo } from '#lib/demo/controller.svelte.js';
   import {
     formatMoney,
-    monthlyInterest,
+    calculateInterest,
     parseMoney,
   } from '#lib/demo/domain.js';
   let {
@@ -140,13 +140,14 @@
         demo purchase becomes available.
       </p>
     {:else if mode !== 'income'}<p class="helper">
-        Next monthly interest: <strong
+        Next interest payment: <strong
           >{formatMoney(
-            monthlyInterest(
+            calculateInterest(
               Math.max(
                 0,
                 goal.balance + (mode === 'deposit' ? amount : -amount),
               ),
+              family.interestRate,
             ),
           )}</strong
         >. Paid only if your parent’s fund covers it and your goal is still

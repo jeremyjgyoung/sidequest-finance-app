@@ -1,4 +1,10 @@
 export type Role = 'teen' | 'parent';
+export type InterestPeriod = 'daily' | 'weekly' | 'monthly';
+export const INTEREST_PERIODS = {
+  daily: { label: 'Daily', unit: 'day' },
+  weekly: { label: 'Weekly', unit: 'week' },
+  monthly: { label: 'Monthly', unit: 'month' },
+} as const;
 export type GoalStatus = 'saving' | 'reached' | 'purchased';
 export type EntryKind =
   | 'deposit'
@@ -9,6 +15,7 @@ export type EntryKind =
   | 'income'
   | 'purchase'
   | 'return'
+  | 'settings'
   | 'goal';
 export interface Goal {
   id: string;
@@ -32,6 +39,8 @@ export interface LedgerEntry {
   goalId?: string;
   role?: Role;
   basis?: number;
+  interestRate?: number;
+  interestPeriod?: InterestPeriod;
 }
 export interface DemoState {
   version: 1;
@@ -41,6 +50,9 @@ export interface DemoState {
   fund: number;
   totalReserved: number;
   totalInterest: number;
+  interestRate: number;
+  interestPeriod: InterestPeriod;
+  /** Sequential payment-period counter; legacy storage name retained for saved demos. */
   month: number;
   speed: number;
   role: Role;
@@ -56,11 +68,13 @@ export interface SetupInput {
   teenWallet: number;
   parentWallet: number;
   reserve: number;
+  interestRate?: number;
+  interestPeriod?: InterestPeriod;
 }
 export type Command =
   | { type: 'deposit' | 'withdrawal' | 'funding'; amount: number }
   | { type: 'income'; amount: number; role: Role }
-  | { type: 'month' | 'purchase' }
+  | { type: 'advance' | 'purchase' }
   | {
       type: 'edit-goal' | 'new-goal';
       title: string;
@@ -68,7 +82,12 @@ export type Command =
       target: number;
     }
   | { type: 'role'; role: Role }
-  | { type: 'speed'; speed: number };
+  | { type: 'speed'; speed: number }
+  | {
+      type: 'interest-settings';
+      interestRate: number;
+      interestPeriod: InterestPeriod;
+    };
 
 export const MAX_CENTS = 1_000_000_000_000;
 export const PLAYBACK_SPEEDS: readonly number[] = [0.5, 1, 2, 10];
@@ -95,7 +114,17 @@ export const displayedBalance = (goal: Goal) =>
   goal.status === 'purchased'
     ? (goal.points.at(-1)?.balance ?? 0)
     : goal.balance;
-export const monthlyInterest = (balance: number) => Math.round(balance / 10);
+export const calculateInterest = (balance: number, rate = 10) =>
+  Math.round((balance * rate) / 100);
+export function validateInterestSettings(
+  rate: number,
+  period: InterestPeriod,
+): void {
+  if (!Number.isInteger(rate) || rate < 1 || rate > 30)
+    throw new Error('Choose a whole-number interest rate from 1% to 30%.');
+  if (!Object.hasOwn(INTEREST_PERIODS, period))
+    throw new Error('Choose daily, weekly, or monthly interest.');
+}
 export function assertMoney(value: number, allowZero = false): void {
   if (
     !Number.isSafeInteger(value) ||
@@ -160,6 +189,8 @@ function entry(
     kind,
     amount,
     description,
+    interestRate: s.interestRate,
+    interestPeriod: s.interestPeriod,
     ...extra,
   });
 }
@@ -184,6 +215,9 @@ export function createDemo(input: SetupInput): DemoState {
   const name = input.teenName.trim();
   if (!name || name.length > 30)
     throw new Error('Enter a name of 1–30 characters.');
+  const interestRate = input.interestRate ?? 10;
+  const interestPeriod = input.interestPeriod ?? 'monthly';
+  validateInterestSettings(interestRate, interestPeriod);
   assertMoney(input.teenWallet, true);
   assertMoney(input.parentWallet, true);
   assertMoney(input.reserve, true);
@@ -198,6 +232,8 @@ export function createDemo(input: SetupInput): DemoState {
     fund: input.reserve,
     totalReserved: input.reserve,
     totalInterest: 0,
+    interestRate,
+    interestPeriod,
     month: 0,
     speed: DEFAULT_SPEED,
     role: 'teen',
@@ -267,10 +303,10 @@ export function transition(state: DemoState, command: Command): DemoState {
         { role: command.role },
       );
       break;
-    case 'month': {
+    case 'advance': {
       saving(g);
       s.month += 1;
-      const interest = monthlyInterest(g.balance);
+      const interest = calculateInterest(g.balance, s.interestRate);
       if (!interest)
         entry(
           s,
@@ -293,10 +329,17 @@ export function transition(state: DemoState, command: Command): DemoState {
         g.balance += interest;
         g.interest += interest;
         s.totalInterest += interest;
-        entry(s, 'interest', interest, 'Monthly interest from your parent', {
-          goalId: g.id,
-          basis,
-        });
+        entry(
+          s,
+          'interest',
+          interest,
+          INTEREST_PERIODS[s.interestPeriod].label +
+            ' interest from your parent',
+          {
+            goalId: g.id,
+            basis,
+          },
+        );
       }
       snapshot(s, g);
       checkReached(g);
@@ -346,6 +389,20 @@ export function transition(state: DemoState, command: Command): DemoState {
       g.status = 'purchased';
       break;
     }
+    case 'interest-settings':
+      if (s.role !== 'parent')
+        throw new Error('Switch to the parent view to set the interest rules.');
+      validateInterestSettings(command.interestRate, command.interestPeriod);
+      s.interestRate = command.interestRate;
+      s.interestPeriod = command.interestPeriod;
+      entry(
+        s,
+        'settings',
+        0,
+        'Set interest to ' + s.interestRate + '% ' + s.interestPeriod,
+        { role: 'parent' },
+      );
+      break;
     case 'role':
       if (!['teen', 'parent'].includes(command.role))
         throw new Error('Choose a valid view.');
@@ -382,9 +439,9 @@ export function exampleDemo(): DemoState {
   });
   for (const c of [
     { type: 'deposit', amount: 30000 },
-    { type: 'month' },
-    { type: 'month' },
-    { type: 'month' },
+    { type: 'advance' },
+    { type: 'advance' },
+    { type: 'advance' },
   ] as Command[])
     s = transition(s, c);
   return s;
@@ -392,6 +449,10 @@ export function exampleDemo(): DemoState {
 
 export function readSaved(raw: string): DemoState {
   const s = JSON.parse(raw) as DemoState;
+  if (s && typeof s === 'object') {
+    s.interestRate ??= 10;
+    s.interestPeriod ??= 'monthly';
+  }
   // Retire old speed settings without discarding any saved financial progress.
   if (s && [5, 30].includes(s.speed)) s.speed = DEFAULT_SPEED;
   if (
@@ -408,6 +469,7 @@ export function readSaved(raw: string): DemoState {
     !Array.isArray(s.ledger)
   )
     throw new Error('Invalid saved demo');
+  validateInterestSettings(s.interestRate, s.interestPeriod);
   [
     s.teenWallet,
     s.parentWallet,
@@ -447,6 +509,9 @@ export function readSaved(raw: string): DemoState {
   )
     throw new Error('Missing current goal');
   for (const e of s.ledger) {
+    e.interestRate ??= 10;
+    e.interestPeriod ??= 'monthly';
+    validateInterestSettings(e.interestRate, e.interestPeriod);
     if (
       typeof e.id !== 'string' ||
       typeof e.description !== 'string' ||
@@ -462,6 +527,7 @@ export function readSaved(raw: string): DemoState {
         'income',
         'purchase',
         'return',
+        'settings',
         'goal',
       ].includes(e.kind) ||
       (e.role !== undefined && !['teen', 'parent'].includes(e.role)) ||

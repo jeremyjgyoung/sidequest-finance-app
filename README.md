@@ -1,6 +1,6 @@
 # Sidequest
 
-A cozy, browser-only family savings demo built with SvelteKit, Svelte, and TypeScript. The teenager saves toward a goal; a separate parent-funded pool pays 10% compound interest each simulated month. All balances and purchases are simulated.
+A cozy, browser-only family savings demo built with SvelteKit, Svelte, and TypeScript. The teenager saves toward a goal; a separate parent-funded pool pays a parent-selected 1–30% compound interest each simulated day, week, or month (default: 10% monthly). All balances and purchases are simulated.
 
 ## Run locally
 
@@ -27,18 +27,20 @@ New demos automatically start with a $500 teen wallet and a $10,000 parent walle
 
 - Switch between Teen and Parent views; both use the same local family state.
 - Deposit, withdraw, add demo income, or fund the parent’s interest pool.
-- Play at 0.5, 1, 2, or 10 seconds per month (default: 2 seconds), or use **Next month** while paused.
+- Play at 0.5, 1, 2, or 10 seconds per payment period (default: 2 seconds), or use **Next month** while paused.
 - Inspect **Activity** for the full transaction history and **How it works** for the rules.
 - Complete a quest, make a simulated purchase, and start another goal.
 - **Load example** and **Reset demo** require confirmation before replacing existing progress.
 
 The populated example starts with $399.30 in savings, a $200 teen wallet, a $9,700 parent wallet, and $200.70 reserved for interest. Advancing three more months reaches $531.47. Buying the $500 item returns $31.47 to the teen wallet, leaving $231.47 available for another quest.
 
+Parents can set the rate and payment frequency in **Set their savings boost**. Changes pause playback and begin a fresh payment period. Past payments keep their original rates and frequency labels. Charts and activity use sequential period numbers so changing frequency does not relabel past events. Older saved demos migrate to 10% monthly without losing balances or history.
+
 ## Money and time rules
 
-Money is stored as integer cents. A monthly payment is 10% of the current savings balance, rounded to the nearest cent. Previously paid interest compounds. A payment transfers money from the parent fund into savings; it does not create money.
+Money is stored as integer cents. Each payment uses the parent’s selected percentage (a whole number from 1% to 30%) of the current savings balance, rounded to the nearest cent. The rate applies once per selected simulated day, week, or month, without annual-rate proration. Previously paid interest compounds. A payment transfers money from the parent fund into savings; it does not create money.
 
-If the fund cannot cover the entire payment, the month is skipped. There are no partial payments, debt, or back payments. Deposits and withdrawals affect the next month’s calculation. Only the explicit demo-income action creates simulated money.
+If the fund cannot cover the entire payment, the payment period is skipped. There are no partial payments, debt, or back payments. Deposits and withdrawals affect the next period’s calculation. Only the explicit demo-income action creates simulated money.
 
 A full final payment can exceed the target. Reaching a goal pauses playback and stops interest and savings transfers for that goal. A purchase deducts the target and returns excess savings to the teen wallet. New goals start at zero savings and retain both wallets, unused funding, and prior activity.
 

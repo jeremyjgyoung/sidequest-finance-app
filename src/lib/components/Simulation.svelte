@@ -1,8 +1,9 @@
 <script lang="ts">
   import Icon from './Icon.svelte';
   import { demo } from '#lib/demo/controller.svelte.js';
-  import { PLAYBACK_SPEEDS } from '#lib/demo/domain.js';
+  import { PLAYBACK_SPEEDS, INTEREST_PERIODS } from '#lib/demo/domain.js';
   const family = $derived(demo.state!);
+  const unit = $derived(INTEREST_PERIODS[family.interestPeriod].unit);
   const enabled = $derived(demo.goal?.status === 'saving');
   const seconds = $derived(
     family.speed < 1
@@ -15,7 +16,7 @@
   <div class="simulation-label">
     <span class="simulation-flag"><Icon name="flag" size={19} /></span><strong
       >Time machine</strong
-    ><span class="month-badge">Month {family.month}</span>
+    ><span class="month-badge">Period {family.month}</span>
   </div>
   <div class="simulation-actions">
     <span class="clock-status"
@@ -37,23 +38,24 @@
       class="button step-button"
       disabled={demo.running || !enabled}
       onclick={() => demo.step()}
-      title="Advance one month while paused"
-      ><Icon name="step" size={15} /><span>Next month</span></button
+      title={'Advance one simulated ' + unit + ' while paused'}
+      ><Icon name="step" size={15} /><span>Next {unit}</span></button
     >
     <label class="speed-control"
       ><span class="sr-only">Simulation speed</span><select
         value={family.speed}
         onchange={(e) =>
           demo.send({ type: 'speed', speed: Number(e.currentTarget.value) })}
-        >{#each PLAYBACK_SPEEDS as speed}<option value={speed}
-            >{speed}s / month</option
+        >{#each PLAYBACK_SPEEDS as speed}<option value={speed}>{speed}s</option
           >{/each}</select
       ></label
     >
   </div>
   <div class="countdown">
     <span
-      >{enabled ? `Next month in ${seconds}s` : 'A new adventure awaits'}</span
+      >{enabled
+        ? `Next ${unit} in ${seconds}s`
+        : 'A new adventure awaits'}</span
     ><span class="countdown-track"
       ><span style:width={`${demo.progress * 100}%`}></span></span
     >

@@ -3,11 +3,13 @@
   import {
     displayedBalance,
     formatMoney,
-    monthlyInterest,
+    calculateInterest,
+    INTEREST_PERIODS,
   } from '#lib/demo/domain.js';
   import Icon from './Icon.svelte';
   import ContributionBreakdown from './ContributionBreakdown.svelte';
   import Celebration from './Celebration.svelte';
+  import InterestSettings from './InterestSettings.svelte';
   import MoneyDialog from './MoneyDialog.svelte';
   import GoalDialog from './GoalDialog.svelte';
   import Modal from './Modal.svelte';
@@ -19,7 +21,10 @@
   const active = $derived(goal.status === 'saving');
   const balance = $derived(displayedBalance(goal));
   const progress = $derived(Math.min(100, (balance / goal.target) * 100));
-  const nextInterest = $derived(monthlyInterest(goal.balance));
+  const nextInterest = $derived(
+    calculateInterest(goal.balance, family.interestRate),
+  );
+  const unit = $derived(INTEREST_PERIODS[family.interestPeriod].unit);
   const covered = $derived(family.fund >= nextInterest);
   const recent = $derived(
     family.ledger
@@ -151,6 +156,7 @@
         </div>
       </section>{/each}
   </div>
+  <InterestSettings />
   <div class="parent-middle-grid">
     <section class="card funding-card">
       <div class="card-heading">
@@ -180,7 +186,9 @@
     </section>
     <section class="card boost-card">
       <div class="card-heading">
-        <h3>{active ? 'Next monthly payment' : 'A milestone made possible'}</h3>
+        <h3>
+          {active ? 'Next interest payment' : 'A milestone made possible'}
+        </h3>
         <span class="small-icon gold"
           ><Icon name={active ? 'coins' : 'check'} size={21} /></span
         >
@@ -197,16 +205,17 @@
           >
         </div>
         <p class="calculation">
-          {formatMoney(goal.balance)} <span>×</span> 10% <span>=</span>
+          {formatMoney(goal.balance)} <span>×</span>
+          {family.interestRate}% <span>=</span>
           {formatMoney(nextInterest)}
         </p>
         <p class="muted">
-          Paid from the interest fund at the next month boundary.
+          Paid from the interest fund at the next simulated {unit} boundary.
         </p>
         <div class="rule-note">
           <Icon name="info" size={16} /><span
-            >A month is skipped if the fund can’t cover the full payment. No
-            back payments.</span
+            >A payment is skipped if the fund can’t cover it in full. No back
+            payments.</span
           >
         </div>{:else}<strong class="stat-value green"
           >{formatMoney(goal.interest)}</strong
@@ -343,14 +352,15 @@
         </div>
         {#if active}<div class="boost-value">
             <strong>+{formatMoney(nextInterest)}</strong><span
-              class="badge gold">10% / month</span
+              class="badge gold">{family.interestRate}% / {unit}</span
             >
           </div>
           <p class="muted">
             A little help from your parent, growing with your savings.
           </p>
           <div class="calculation">
-            {formatMoney(goal.balance)} <span>×</span> 10% <span>=</span>
+            {formatMoney(goal.balance)} <span>×</span>
+            {family.interestRate}% <span>=</span>
             {formatMoney(nextInterest)}
           </div>
           <div class="boost-status" class:warning={!covered}>
@@ -361,7 +371,7 @@
                 : 'Parent fund needs a top-up'}
           </div>
           {#if !covered}<p class="fine-print">
-              This month will be skipped unless the full payment is funded.
+              The next payment will be skipped unless the full amount is funded.
             </p>{/if}{:else}<div class="purchase-totals">
             <div><span>Saved</span><strong>{formatMoney(balance)}</strong></div>
             <div>

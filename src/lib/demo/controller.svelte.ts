@@ -23,7 +23,7 @@ class DemoController {
   private clock = new PlaybackClock(() => {
     try {
       if (this.state && currentGoal(this.state).status === 'saving')
-        this.send({ type: 'month' });
+        this.send({ type: 'advance' });
       else this.pause();
     } catch (error) {
       this.pause();
@@ -134,7 +134,7 @@ class DemoController {
     this.state = transition(this.state, command);
     this.clock.setSpeed(this.state.speed);
     if (this.goal?.status !== 'saving') this.pause();
-    if (command.type === 'new-goal') {
+    if (command.type === 'new-goal' || command.type === 'interest-settings') {
       this.clock.reset();
       this.syncClock();
     }

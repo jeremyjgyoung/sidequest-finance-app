@@ -2,6 +2,7 @@
   import Icon from './Icon.svelte';
   import {
     formatMoney,
+    INTEREST_PERIODS,
     type LedgerEntry,
     type DemoState,
   } from '#lib/demo/domain.js';
@@ -13,13 +14,14 @@
   const labels: Record<string, string> = {
     deposit: 'Added to savings',
     withdrawal: 'Moved to wallet',
-    interest: 'Monthly interest',
+    interest: 'Interest payment',
     skipped: 'Interest skipped',
     funding: 'Interest fund topped up',
     income: 'Demo income',
     purchase: 'Goal purchased',
     return: 'Leftover returned',
     goal: 'Quest updated',
+    settings: 'Interest settings',
   };
   const icons: Record<string, string> = {
     deposit: 'down',
@@ -31,6 +33,7 @@
     purchase: 'gift',
     return: 'arrow',
     goal: 'flag',
+    settings: 'edit',
   };
 </script>
 
@@ -41,8 +44,13 @@
         ><Icon name={icons[entry.kind]} size={19} /></span
       >
       <div class="activity-copy">
-        <strong>{labels[entry.kind]}</strong><span
-          >Month {entry.month}{#if full}
+        <strong
+          >{entry.kind === 'interest'
+            ? INTEREST_PERIODS[entry.interestPeriod ?? 'monthly'].label +
+              ' interest'
+            : labels[entry.kind]}</strong
+        ><span
+          >Period {entry.month}{#if full}
             · {entry.goalId
               ? state.goals.find((g) => g.id === entry.goalId)?.title
               : entry.role === 'teen'
@@ -51,7 +59,7 @@
         >{#if full}<p>
             {entry.description}
           </p>{/if}{#if entry.kind === 'interest' && entry.basis !== undefined}<small
-            >{formatMoney(entry.basis)} × 10%</small
+            >{formatMoney(entry.basis)} × {entry.interestRate ?? 10}%</small
           >{/if}{#if !full && entry.kind === 'skipped'}<small
             >{entry.description}</small
           >{/if}

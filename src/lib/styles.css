@@ -3160,3 +3160,70 @@ dialog::backdrop {
     display: none;
   }
 }
+
+.interest-settings-card {
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) minmax(0, 1.8fr);
+  gap: 20px 30px;
+  align-items: center;
+}
+.interest-settings-card .eyebrow {
+  margin-bottom: 9px;
+}
+.interest-settings-card > div > p:last-child {
+  font-size: 13px;
+  margin-top: 10px;
+}
+.interest-settings-card form {
+  display: grid;
+  grid-template-columns: 100px minmax(120px, 1fr) auto;
+  gap: 15px;
+  align-items: end;
+}
+.interest-settings-card select {
+  padding: 10px 12px;
+  color: var(--forest);
+}
+.interest-settings-card .button {
+  min-height: 44px;
+}
+.interest-settings-card .form-error {
+  grid-column: 1/-1;
+}
+.interest-settings-note {
+  grid-column: 1/-1;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  border-top: 1px solid var(--border);
+  padding-top: 15px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.interest-settings-note svg {
+  margin-top: 2px;
+}
+.interest-settings-note strong {
+  color: var(--forest);
+}
+@media (max-width: 1250px) {
+  .interest-settings-card {
+    grid-template-columns: 1fr;
+  }
+  .interest-settings-card form {
+    grid-template-columns: 120px 1fr auto;
+  }
+}
+@media (max-width: 600px) {
+  .interest-settings-card form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .interest-settings-card form .button {
+    grid-column: 1/-1;
+  }
+  .interest-settings-card {
+    padding: 23px;
+  }
+}

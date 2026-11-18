@@ -73,6 +73,11 @@ export type Command =
 export const MAX_CENTS = 1_000_000_000_000;
 export const PLAYBACK_SPEEDS: readonly number[] = [0.5, 1, 2, 10];
 export const DEFAULT_SPEED = 2;
+export const DEMO_BALANCES = {
+  teenWallet: 50000,
+  parentWallet: 1000000,
+  reserve: 30000,
+} as const;
 export const GOAL_ICONS = [
   'gamepad',
   'bike',
@@ -373,13 +378,10 @@ export function exampleDemo(): DemoState {
     title: 'PS5',
     icon: 'gamepad',
     target: 50000,
-    teenWallet: 30000,
-    parentWallet: 100000,
-    reserve: 30000,
+    ...DEMO_BALANCES,
   });
   for (const c of [
     { type: 'deposit', amount: 30000 },
-    { type: 'income', amount: 12500, role: 'teen' },
     { type: 'month' },
     { type: 'month' },
     { type: 'month' },

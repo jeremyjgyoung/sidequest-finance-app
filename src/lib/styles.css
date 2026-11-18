@@ -2998,3 +2998,165 @@ dialog::backdrop {
     padding-inline: 3px;
   }
 }
+
+/* Put the two sources of savings next to the goal balance. */
+.contribution-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 13px 23px;
+  border-top: 1px solid var(--border);
+  margin-top: 21px;
+  padding-top: 17px;
+}
+.contribution-breakdown > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.contribution-breakdown > div > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.contribution-breakdown strong {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.3px;
+}
+.contribution-plus {
+  color: #a5b18e;
+  font-size: 19px;
+}
+.contribution-withdrawn {
+  margin-left: auto;
+}
+.contribution-withdrawn strong {
+  font-size: 14px;
+  color: #7c806c;
+}
+.celebration-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  overflow: hidden;
+  padding: 27px 30px;
+  margin-bottom: 28px;
+  border: 1px solid #d8bd72;
+  border-radius: var(--radius);
+  background: linear-gradient(115deg, #f8edc8, #eff3df 70%);
+  box-shadow: 0 4px 24px #b99d4620;
+}
+.celebration-trophy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: #edd391;
+  color: #8f6c27;
+  box-shadow: inset 0 0 0 5px #fff5d555;
+}
+.celebration-banner .eyebrow {
+  color: #9c7f36;
+  font-size: 10px;
+  margin-bottom: 7px;
+}
+.celebration-banner h2 {
+  font-size: 34px;
+  overflow-wrap: anywhere;
+}
+.celebration-banner p:last-child {
+  font-size: 13px;
+  color: #71815b;
+  margin-top: 8px;
+}
+.celebration-stars {
+  margin-left: auto;
+  color: #c1a252;
+  font-size: 28px;
+  white-space: nowrap;
+  letter-spacing: 9px;
+}
+.coin-confetti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 35;
+}
+.confetti-coin {
+  position: absolute;
+  top: -40px;
+  width: 17px;
+  height: 21px;
+  background: #e7b94b;
+  border: 2px solid #aa7c23;
+  box-shadow:
+    3px 0 #f6d374,
+    -3px 0 #aa7c23,
+    0 3px #aa7c23,
+    0 -3px #f7da85;
+  animation: coin-fall 4s linear both;
+  image-rendering: pixelated;
+}
+.confetti-coin:after {
+  content: '$';
+  position: absolute;
+  inset: -1px;
+  text-align: center;
+  font:
+    17px 'Pixelify Sans',
+    monospace;
+  color: #fff1a0;
+  line-height: 20px;
+}
+@keyframes coin-fall {
+  from {
+    transform: translate3d(0, -30px, 0) rotate(0) rotateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(var(--drift), 110vh, 0) rotate(540deg)
+      rotateY(720deg);
+    opacity: 0;
+  }
+}
+@media (max-width: 740px) {
+  .celebration-banner {
+    padding: 22px 18px;
+    gap: 14px;
+  }
+  .celebration-banner h2 {
+    font-size: 29px;
+  }
+  .celebration-trophy {
+    width: 46px;
+    height: 46px;
+  }
+  .celebration-stars {
+    display: none;
+  }
+  .contribution-breakdown {
+    gap: 12px 16px;
+  }
+  .contribution-breakdown > div > span {
+    font-size: 11px;
+  }
+  .contribution-breakdown strong {
+    font-size: 15px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coin-confetti {
+    display: none;
+  }
+}

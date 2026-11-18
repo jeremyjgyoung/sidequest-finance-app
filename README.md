@@ -11,7 +11,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open the URL printed by Vite. Complete the three-step setup or choose **Explore the example demo** to jump to Alex’s Month 3 PS5 goal.
+Open the URL printed by Vite. Choose a goal or choose **Explore the example demo** to jump to Alex’s Month 3 PS5 goal.
 
 ```sh
 pnpm check           # Svelte, TypeScript, and compiler accessibility checks
@@ -20,6 +20,8 @@ pnpm format:check    # Source formatting
 pnpm build           # Static production build
 pnpm preview         # Preview the production build
 ```
+
+New demos automatically start with a $500 teen wallet and a $10,000 parent wallet; $300 is reserved from the parent wallet, leaving $9,700 available. Wallet-entry and review steps are skipped. Goal cards show teen contributions and parent-paid interest separately, and completing a goal triggers a short coin celebration (disabled for reduced motion).
 
 ## Try the demo
 
@@ -30,7 +32,7 @@ pnpm preview         # Preview the production build
 - Complete a quest, make a simulated purchase, and start another goal.
 - **Load example** and **Reset demo** require confirmation before replacing existing progress.
 
-The populated example starts with $399.30 in savings, a $125 teen wallet, a $700 parent wallet, and $200.70 reserved for interest. Advancing three more months reaches $531.47. Buying the $500 item returns $31.47 to the teen wallet, leaving $156.47 available for another quest.
+The populated example starts with $399.30 in savings, a $200 teen wallet, a $9,700 parent wallet, and $200.70 reserved for interest. Advancing three more months reaches $531.47. Buying the $500 item returns $31.47 to the teen wallet, leaving $231.47 available for another quest.
 
 ## Money and time rules
 

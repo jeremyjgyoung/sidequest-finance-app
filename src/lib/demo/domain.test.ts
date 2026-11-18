@@ -45,7 +45,7 @@ describe('family savings', () => {
       s.fund,
       s.totalInterest,
       s.teenWallet,
-    ]).toEqual([39930, 20070, 9930, 12500]);
+    ]).toEqual([39930, 20070, 9930, 20000]);
     for (let n = 0; n < 3; n++) s = transition(s, { type: 'month' });
     expect([
       currentGoal(s).balance,
@@ -59,7 +59,7 @@ describe('family savings', () => {
       s.teenWallet,
       currentGoal(s).balance,
       currentGoal(s).status,
-    ]).toEqual([15647, 0, 'purchased']);
+    ]).toEqual([23147, 0, 'purchased']);
     expect(total(s)).toBe(before);
     expect(() => transition(s, { type: 'purchase' })).toThrow();
     s = transition(s, {
@@ -73,11 +73,11 @@ describe('family savings', () => {
       currentGoal(s).balance,
       s.fund,
       s.teenWallet,
-    ]).toEqual([2, 0, 6853, 15647]);
+    ]).toEqual([2, 0, 6853, 23147]);
   });
   it('previews the fifty dollar transfer and reduces future interest after withdrawing', () => {
     let s = transition(exampleDemo(), { type: 'deposit', amount: 5000 });
-    expect([s.teenWallet, currentGoal(s).balance]).toEqual([7500, 44930]);
+    expect([s.teenWallet, currentGoal(s).balance]).toEqual([15000, 44930]);
     s = transition(s, { type: 'month' });
     expect(s.ledger.at(-1)?.amount).toBe(4493);
     s = transition(s, { type: 'withdrawal', amount: 10000 });

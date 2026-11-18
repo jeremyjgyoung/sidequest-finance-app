@@ -6,6 +6,8 @@
     monthlyInterest,
   } from '#lib/demo/domain.js';
   import Icon from './Icon.svelte';
+  import ContributionBreakdown from './ContributionBreakdown.svelte';
+  import Celebration from './Celebration.svelte';
   import MoneyDialog from './MoneyDialog.svelte';
   import GoalDialog from './GoalDialog.svelte';
   import Modal from './Modal.svelte';
@@ -92,6 +94,10 @@
   >
 </div>
 
+{#if !parent && goal.status === 'reached'}<Celebration
+    title={goal.title}
+  />{/if}
+
 {#if parent}
   <section class="card parent-goal-summary">
     <div>
@@ -114,6 +120,7 @@
             : 'Goal reached'}</span
       >
     </div>
+    <ContributionBreakdown {goal} teenName={family.teenName} parent />
     <div class="parent-progress-row">
       <div
         class="progress-track"
@@ -248,6 +255,7 @@
               : 'Goal reached!'}</span
         >
       </div>
+      <ContributionBreakdown {goal} teenName={family.teenName} />
       <div class="quest-landscape">
         <img
           src={goal.icon !== 'gamepad'

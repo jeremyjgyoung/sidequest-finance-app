@@ -71,6 +71,8 @@ export type Command =
   | { type: 'speed'; speed: number };
 
 export const MAX_CENTS = 1_000_000_000_000;
+export const PLAYBACK_SPEEDS: readonly number[] = [0.5, 1, 2, 10];
+export const DEFAULT_SPEED = 2;
 export const GOAL_ICONS = [
   'gamepad',
   'bike',
@@ -192,7 +194,7 @@ export function createDemo(input: SetupInput): DemoState {
     totalReserved: input.reserve,
     totalInterest: 0,
     month: 0,
-    speed: 10,
+    speed: DEFAULT_SPEED,
     role: 'teen',
     currentId: goal.id,
     goals: [goal],
@@ -345,7 +347,7 @@ export function transition(state: DemoState, command: Command): DemoState {
       s.role = command.role;
       break;
     case 'speed':
-      if (![5, 10, 30].includes(command.speed))
+      if (!PLAYBACK_SPEEDS.includes(command.speed))
         throw new Error('Choose a supported speed.');
       s.speed = command.speed;
       break;
@@ -388,13 +390,15 @@ export function exampleDemo(): DemoState {
 
 export function readSaved(raw: string): DemoState {
   const s = JSON.parse(raw) as DemoState;
+  // Retire old speed settings without discarding any saved financial progress.
+  if (s && [5, 30].includes(s.speed)) s.speed = DEFAULT_SPEED;
   if (
     !s ||
     s.version !== 1 ||
     typeof s.teenName !== 'string' ||
     !s.teenName.trim() ||
     !['teen', 'parent'].includes(s.role) ||
-    ![5, 10, 30].includes(s.speed) ||
+    !PLAYBACK_SPEEDS.includes(s.speed) ||
     !Number.isSafeInteger(s.month) ||
     s.month < 0 ||
     !Array.isArray(s.goals) ||

@@ -1,8 +1,10 @@
+import { DEFAULT_SPEED } from './domain';
+
 /** One boundary per tick; never catches up time spent outside the visible session. */
 export class PlaybackClock {
   running = false;
   progress = 0;
-  speed = 10;
+  speed = DEFAULT_SPEED;
   private last = 0;
   constructor(private advance: () => void) {}
   play(now: number) {
@@ -35,7 +37,7 @@ export class PlaybackClock {
       return;
     }
     this.progress += delta / (this.speed * 1000);
-    if (this.progress >= 1) {
+    if (this.progress >= 1 - 1e-9) {
       this.progress = 0;
       this.advance();
     }

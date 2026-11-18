@@ -1,10 +1,13 @@
 <script lang="ts">
   import Icon from './Icon.svelte';
   import { demo } from '#lib/demo/controller.svelte.js';
+  import { PLAYBACK_SPEEDS } from '#lib/demo/domain.js';
   const family = $derived(demo.state!);
   const enabled = $derived(demo.goal?.status === 'saving');
   const seconds = $derived(
-    Math.max(1, Math.ceil((1 - demo.progress) * family.speed)),
+    family.speed < 1
+      ? Math.max(0.1, Math.ceil((1 - demo.progress) * family.speed * 10) / 10)
+      : Math.max(1, Math.ceil((1 - demo.progress) * family.speed)),
   );
 </script>
 
@@ -42,9 +45,9 @@
         value={family.speed}
         onchange={(e) =>
           demo.send({ type: 'speed', speed: Number(e.currentTarget.value) })}
-        ><option value={5}>5s / month</option><option value={10}
-          >10s / month</option
-        ><option value={30}>30s / month</option></select
+        >{#each PLAYBACK_SPEEDS as speed}<option value={speed}
+            >{speed}s / month</option
+          >{/each}</select
       ></label
     >
   </div>

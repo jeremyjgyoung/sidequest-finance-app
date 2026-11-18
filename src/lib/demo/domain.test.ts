@@ -134,6 +134,19 @@ describe('family savings', () => {
     expect(() => transition(s, { type: 'funding', amount: -1 })).toThrow();
     expect(() => transition(s, { type: 'withdrawal', amount: 0.1 })).toThrow();
   });
+  it('defaults to two seconds and migrates retired speeds without changing savings', () => {
+    const state = exampleDemo();
+    expect(state.speed).toBe(2);
+    for (const speed of [0.5, 1, 2, 10]) {
+      expect(transition(state, { type: 'speed', speed }).speed).toBe(speed);
+    }
+    for (const speed of [5, 30]) {
+      const restored = readSaved(JSON.stringify({ ...state, speed }));
+      expect(restored).toEqual(state);
+    }
+    expect(readSaved(JSON.stringify({ ...state, speed: 10 })).speed).toBe(10);
+    expect(() => transition(state, { type: 'speed', speed: 3 })).toThrow();
+  });
   it('parses currency strictly and validates saved data', () => {
     expect(parseMoney('12.05')).toBe(1205);
     for (const input of ['-2', 'Infinity', '1e3', '12.001', '', 'abc'])

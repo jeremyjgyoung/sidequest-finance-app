@@ -25,7 +25,7 @@ pnpm preview         # Preview the production build
 
 - Switch between Teen and Parent views; both use the same local family state.
 - Deposit, withdraw, add demo income, or fund the parent’s interest pool.
-- Play at 5, 10, or 30 seconds per month, or use **Next month** while paused.
+- Play at 0.5, 1, 2, or 10 seconds per month (default: 2 seconds), or use **Next month** while paused.
 - Inspect **Activity** for the full transaction history and **How it works** for the rules.
 - Complete a quest, make a simulated purchase, and start another goal.
 - **Load example** and **Reset demo** require confirmation before replacing existing progress.

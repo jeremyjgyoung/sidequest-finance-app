@@ -60,7 +60,7 @@
 <section class="card learning-rules">
   <h2>A few things to know.</h2>
   <div class="rules-grid">
-    {#each [{ title: 'The fund has a limit.', text: 'If the parent fund can’t cover a whole monthly payment, that month is skipped. Later top-ups cover future payments, with no back payments.' }, { title: 'Your money stays yours.', text: 'Withdraw savings back into your wallet while a goal is active. A smaller balance means a smaller next interest payment.' }, { title: 'You control the clock.', text: 'Play at 5, 10, or 30 seconds per month, or pause and advance a month yourself. Changing tabs and opening money dialogs pauses the simulation.' }, { title: 'A goal is a finish line.', text: 'The final monthly payment can exceed your target. Interest stops when the goal is reached. Buy the item with demo money and keep any excess in your wallet.' }] as rule}<div
+    {#each [{ title: 'The fund has a limit.', text: 'If the parent fund can’t cover a whole monthly payment, that month is skipped. Later top-ups cover future payments, with no back payments.' }, { title: 'Your money stays yours.', text: 'Withdraw savings back into your wallet while a goal is active. A smaller balance means a smaller next interest payment.' }, { title: 'You control the clock.', text: 'Play at 0.5, 1, 2, or 10 seconds per month (default: 2 seconds), or pause and advance a month yourself. Changing tabs and opening money dialogs pauses the simulation.' }, { title: 'A goal is a finish line.', text: 'The final monthly payment can exceed your target. Interest stops when the goal is reached. Buy the item with demo money and keep any excess in your wallet.' }] as rule}<div
       >
         <h3>{rule.title}</h3>
         <p class="muted">{rule.text}</p>

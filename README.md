@@ -2,6 +2,8 @@
 
 A cozy, browser-only family savings demo built with SvelteKit, Svelte, and TypeScript. The teenager saves toward a goal; a separate parent-funded pool pays a parent-selected 1–30% compound interest each simulated day, week, or month (default: 10% monthly). All balances and purchases are simulated.
 
+For students, see the [prompt guide](docs/STUDENT_PROMPT_GUIDE.md) for practical examples of planning, designing, revising, and delivering a web app with an AI assistant.
+
 ## Run locally
 
 Use Node.js **24.x** and **pnpm 12.4.2** (pinned in `package.json`).
